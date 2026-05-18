@@ -1,6 +1,96 @@
-# AlignHQ
+<p align="center">
+  <br />
+  <strong>ALIGNHQ</strong>
+</p>
 
-AlignHQ is a hackathon-ready internal goal setting and quarterly tracking portal. It is built as a focused enterprise workflow product for employees, managers, and HR/Admin teams.
+<h1 align="center">Internal Goal Cycles, Governed From Draft To Audit</h1>
+
+<p align="center">
+  AlignHQ is a browser portal for employee goals, manager approvals, quarterly check-ins, HR governance, reports, analytics, and escalation notices.
+</p>
+
+<p align="center">
+  <a href="#run-locally"><img alt="Next.js" src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=nextdotjs" /></a>
+  <a href="#stack"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white" /></a>
+  <a href="#supabase-setup"><img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white" /></a>
+  <a href="#analytics"><img alt="Recharts" src="https://img.shields.io/badge/Recharts-Analytics-22C55E?style=for-the-badge" /></a>
+  <a href="#microsoft-integrations"><img alt="Microsoft" src="https://img.shields.io/badge/Entra%20ID-Ready-2563EB?style=for-the-badge&logo=microsoft" /></a>
+</p>
+
+<p align="center">
+  <a href="docs/ARCHITECTURE.md">Architecture</a>
+  ·
+  <a href="docs/SCHEMA_GRAPH.md">Schema Graph</a>
+  ·
+  <a href="docs/IMPLEMENTATION_STATUS.md">Implementation Status</a>
+  ·
+  <a href="docs/SUBMISSION_CHECKLIST.md">Submission Checklist</a>
+</p>
+
+---
+
+## Why This Exists
+
+Most goal systems either stop at form submission or turn progress tracking into a rating machine. AlignHQ keeps the workflow controlled without losing the human review loop.
+
+Employees draft goals. Managers approve and lock them. Admins govern the cycle, unlock with reasons, inspect audits, and export evidence. The same app runs as a local demo or a Supabase-backed portal.
+
+---
+
+## Product Surface
+
+| Role | What they do | Key screens |
+|---|---|---|
+| Employee | Draft goals, fix weightage, submit sheets, update quarterly progress | Goal Workspace, Quarterly Check-ins, Goal Health Cards |
+| Manager | Review direct reports, edit targets, return sheets, approve and lock | Approval Desk, Team Check-ins, Team Actions |
+| Admin / HR | Configure cycles, unlock sheets, audit changes, export reports, watch escalations | Governance Center, Escalation Center, Reports, Analytics |
+
+| Module | Working capability |
+|---|---|
+| Goal Workspace | Goal creation, inline edits, weightage meter, submission validation |
+| Approval Desk | Manager review, target edits, weightage edits, return, approve, lock |
+| Shared KPI Manager | Department KPI assignment with primary-owner update sync |
+| Quarterly Check-ins | Actuals, status, blocked flag, progress score, manager comments |
+| Governance Center | Cycle windows, completion view, unlock reason modal, audit writes |
+| Reporting Console | Achievement report, CSV export, audit timeline |
+| Escalation Center | Late submission, approval, and check-in queues |
+| Integration Center | Entra SSO readiness, Azure group mapping, email and Teams status |
+
+---
+
+## Demo Accounts
+
+All seeded Supabase Auth demo users share one password:
+
+```text
+AlignHQ-demo-2026!
+```
+
+| Role | Email | Demo path |
+|---|---|---|
+| Employee | `asha.menon@alignhq.test` | Create goals, submit a sheet, add Q1 actuals |
+| Manager | `isha.rao@alignhq.test` | Review team sheets, return or lock goals |
+| Admin / HR | `priya.nair@alignhq.test` | Govern cycles, unlock sheets, inspect audits, export reports |
+
+Local demo mode also supports role switching from the sidebar.
+
+---
+
+## Fast Demo Path
+
+1. Open `/login`.
+2. Choose **Asha Menon - Employee**.
+3. Edit goals in Goal Workspace until total weightage is 100%.
+4. Submit the sheet.
+5. Switch to **Isha Rao - Manager**.
+6. Review the sheet in Approval Desk, then return or approve and lock it.
+7. Switch back to an approved employee and submit Q1 actuals.
+8. Switch to **Priya Nair - Admin**.
+9. Review governance, escalations, audit history, reports, and analytics.
+
+Use **Reset demo data** in the sidebar to restore the seeded state.
+
+---
 
 ## Stack
 
@@ -9,12 +99,14 @@ AlignHQ is a hackathon-ready internal goal setting and quarterly tracking portal
 | Framework | Next.js 15 App Router |
 | Language | TypeScript |
 | Styling | Tailwind CSS 4 |
-| UI primitives | shadcn/ui-style components on Radix primitives |
-| Backend / DB / Auth | Supabase-ready via `@supabase/ssr` and SQL schema |
+| UI | shadcn/ui-style primitives on Radix |
+| Data/Auth | Supabase Postgres, Auth, RLS |
 | Charts | Recharts |
-| Deployment | Vercel + Supabase |
+| Icons | lucide-react |
+| Tests | Playwright |
+| Deployment | Vercel plus Supabase |
 
-The app runs immediately in local demo mode and switches to Supabase-backed loading and mutations when Supabase environment variables and Auth demo users are configured.
+---
 
 ## Run Locally
 
@@ -23,9 +115,13 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open:
 
-Build check:
+```text
+http://localhost:3000
+```
+
+Quality checks:
 
 ```bash
 npm run typecheck
@@ -33,94 +129,11 @@ npm run build
 npm run test:e2e
 ```
 
-## Demo Path
+---
 
-1. Open `/login` and choose **Asha Menon - Employee**.
-2. In Goal Workspace, edit goals and resolve the live weightage validation until the total is 100%.
-3. Submit the goal sheet.
-4. Switch to **Isha Rao - Manager** and open Approval Desk.
-5. Edit a direct report target or weightage inline, then return or approve and lock.
-6. Switch back to an approved employee and submit Q1 actuals in Quarterly Check-ins.
-7. View Goal Health Cards.
-8. Switch to **Priya Nair - Admin** to review completion, unlock a locked sheet with a reason, inspect audit history, and export CSV.
+## Environment
 
-Use **Reset demo data** in the sidebar to restore the seeded state.
-
-## Implemented Modules
-
-| Module | What it covers |
-|---|---|
-| Goal Workspace | Goal creation, draft editing, validation meter, submit for approval. |
-| Approval Desk | Manager direct-report review, inline target/weightage edits, return, approve and lock. |
-| Shared KPI Manager | Linked departmental KPI view with recipient-only weightage editing and primary-owner update sync. |
-| Quarterly Check-ins | Employee actual achievement updates, status, blocked flag, manager comments. |
-| Admin Governance Center | Cycle windows, completion dashboard, unlock reason modal, audit entries. |
-| Escalation Center | Rule-based reminders and escalations for late goal submission, manager approval, and quarterly check-ins. |
-| Integration Center | Entra ID / Azure AD SSO readiness, Azure group role mapping, org hierarchy, email and Teams status. |
-| Reporting & Audit Console | Achievement report, CSV export, audit timeline. |
-| Goal Health Cards | Rule-based Healthy / Needs Attention / Delayed / Blocked states. |
-| Analytics Dashboard | QoQ trends, completion heatmaps, goal distribution, and manager effectiveness views. |
-
-## Business Rules
-
-- Total weightage across a goal sheet must equal exactly 100%.
-- Minimum weightage per goal is 10%.
-- Maximum number of goals per employee is 8.
-- Employees can edit only Draft or Returned sheets.
-- Manager approval locks goals.
-- Admin unlock requires a reason and creates an audit log entry.
-- Progress score is for tracking only, not ratings.
-
-Progress formulas:
-
-| UoM | Formula |
-|---|---|
-| Numeric / Percentage, Min | `achievement / target` |
-| Numeric / Percentage, Max | `target / achievement` |
-| Timeline | Completion date compared with deadline |
-| Zero-based | If actual is `0`, score is `100`; otherwise `0` |
-
-## Project Structure
-
-```text
-app/
-  (auth)/login/page.tsx
-  (dashboard)/employee/page.tsx
-  (dashboard)/manager/page.tsx
-  (dashboard)/admin/page.tsx
-  actions/goals.ts
-  auth/callback/route.ts
-  api/integrations/dispatch-escalations/route.ts
-  api/reports/achievement/route.ts
-components/
-  auth/
-  admin/
-  checkins/
-  dashboard/
-  goals/
-  layout/
-  manager/
-  reports/
-  ui/
-lib/
-  demo/seed-data.ts
-  domain/escalations.ts
-  domain/rules.ts
-  integrations/dispatch.ts
-  integrations/notifications.ts
-  supabase/browser.ts
-  supabase/server.ts
-  utils/cn.ts
-scripts/
-  seed-demo-auth-users.mjs
-  sync-entra-org.mjs
-types/alignhq.ts
-supabase/schema.sql
-```
-
-## Supabase Setup
-
-Create `.env.local`:
+Create `.env.local` from `.env.example`.
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
@@ -129,9 +142,13 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_for_seed_scripts_only
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-Use `.env.example` as the complete template for Supabase, Entra, Teams, and email integration settings.
+`SUPABASE_SERVICE_ROLE_KEY` is only for local seed scripts and server-side maintenance. Keep it out of browser code, client logs, and public deployments.
 
-The app also supports the older `NEXT_PUBLIC_SUPABASE_ANON_KEY` name as a fallback. Never expose `SUPABASE_SERVICE_ROLE_KEY` to the browser or deployment logs.
+The app also accepts `NEXT_PUBLIC_SUPABASE_ANON_KEY` as a fallback for the publishable key.
+
+---
+
+## Supabase Setup
 
 Apply the schema:
 
@@ -147,57 +164,90 @@ Load deterministic demo data:
 supabase db execute --file supabase/seed.sql
 ```
 
-Or paste `supabase/seed.sql` into the Supabase SQL editor after the schema.
-
-Create real Supabase Auth users for the primary demo roles and map them to `public.users.auth_user_id`:
+Create Supabase Auth users and map them to `public.users.auth_user_id`:
 
 ```bash
 npm run supabase:seed-auth
 ```
 
-The script creates Auth users for every row in `supabase/seed.sql`. The primary launch accounts are:
-
-| Role | Email | Password |
-|---|---|---|
-| Employee | `asha.menon@alignhq.test` | `AlignHQ-demo-2026!` |
-| Manager | `isha.rao@alignhq.test` | `AlignHQ-demo-2026!` |
-| Admin / HR | `priya.nair@alignhq.test` | `AlignHQ-demo-2026!` |
-
-For the old hackathon role-switcher demo without real Supabase Auth users, also run:
+For the older role-switcher flow without real Supabase Auth users, apply:
 
 ```bash
 supabase db execute --file supabase/demo-access.sql
 ```
 
-If you already applied an older copy of `schema.sql` and see an RLS recursion error, run:
+If an older database copy shows an RLS recursion error, apply:
 
 ```bash
 supabase db execute --file supabase/rls-function-fix.sql
 ```
 
-In the Supabase SQL editor, paste the contents of those files rather than the file paths.
+In the Supabase SQL editor, paste file contents rather than file paths.
 
-The schema includes:
+---
 
-- `users`
-- `goal_sheets`
-- `goals`
-- `goal_updates`
-- `manager_comments`
-- `shared_goals`
-- `shared_goal_links`
-- `cycle_windows`
-- `audit_logs`
+## Data Model
 
-RLS is enabled on all core tables, with policies for employee ownership, manager direct-report access, and Admin/HR governance access. The schema also includes database-side validation and lock-guard triggers.
+The schema is small enough to inspect and strict enough to protect the workflow.
+
+| Table | Purpose |
+|---|---|
+| `users` | App profiles, roles, departments, manager hierarchy |
+| `goal_sheets` | Employee cycle sheets and approval states |
+| `goals` | Individual KPI rows under a sheet |
+| `goal_updates` | Quarterly actuals, status, blocked state, progress score |
+| `manager_comments` | Manager check-in comments per goal and quarter |
+| `shared_goals` | Manager-created shared KPIs |
+| `shared_goal_links` | Links between shared KPIs and employee goals |
+| `cycle_windows` | Admin-managed cycle and quarter windows |
+| `audit_logs` | Trace record for governed actions |
+
+Rules enforced by the database:
+
+- One goal sheet per employee and cycle.
+- Total goal weightage must equal 100 before submission or approval.
+- Each goal must carry at least 10% weightage.
+- A sheet can contain at most 8 goals.
+- Locking a sheet locks its goals.
+- Locked goals cannot be edited until Admin unlocks the sheet.
+- Admin unlocks require an audit reason.
+
+See [docs/SCHEMA_GRAPH.md](docs/SCHEMA_GRAPH.md) for the Mermaid ER diagram.
+
+---
+
+## Progress Rules
+
+Progress score is for tracking. It is not a rating.
+
+| UoM | Formula |
+|---|---|
+| Numeric / Percentage, Min | `achievement / target` |
+| Numeric / Percentage, Max | `target / achievement` |
+| Timeline | Completion date compared with deadline |
+| Zero-based | `0` actual means `100`; any other value means `0` |
+
+---
+
+## Analytics
+
+The analytics dashboard uses Recharts for:
+
+- Quarter-over-quarter achievement trend
+- Employee completion heatmap
+- Goal distribution by thrust area
+- Goal distribution by unit of measure
+- Goal status distribution
+- Department completion
+- Manager effectiveness
+
+---
 
 ## Microsoft Integrations
 
-AlignHQ includes an Entra ID SSO entry point on `/login`, an OAuth callback at `/auth/callback`, and an Admin Integration Center for group-role mapping and org hierarchy visibility. Configure the Azure provider in Supabase Auth before using the Microsoft SSO button.
+AlignHQ includes an Entra ID / Azure AD SSO entry point on `/login` and a Supabase Auth callback at `/auth/callback`.
 
-The escalation module generates email and Microsoft Teams adaptive-card notification payloads with deep links to the relevant goal sheet. Production delivery can be wired to Microsoft Graph, SMTP, or a Teams workflow/webhook from the notification builder in `lib/integrations/notifications.ts`.
-
-Optional production integration variables:
+Optional production variables:
 
 ```env
 ENTRA_TENANT_ID=your_azure_tenant_id
@@ -217,7 +267,7 @@ Sync Entra group membership and manager hierarchy into `public.users`:
 npm run entra:sync-org
 ```
 
-Dispatch active escalation notifications from the Admin Escalations page, or call:
+Dispatch active escalation notices from the Admin Escalations page, or call:
 
 ```bash
 curl -X POST http://localhost:3000/api/integrations/dispatch-escalations \
@@ -225,40 +275,92 @@ curl -X POST http://localhost:3000/api/integrations/dispatch-escalations \
   -d "{\"quarter\":\"Q1\",\"origin\":\"http://localhost:3000\"}"
 ```
 
-## Data Strategy
+Notification payloads are generated in `lib/integrations/notifications.ts` for email and Microsoft Teams adaptive cards.
 
-Supabase is the configured source of truth for authenticated runs. `lib/supabase/alignhq-repository.ts` loads workspace data and writes goal, sheet, quarterly update, comment, cycle window, and audit mutations through Supabase.
+---
 
-Local fallback seed data lives in `lib/demo/seed-data.ts` and includes:
+## Project Layout
 
-- 1 Admin / HR user
-- 2 Managers
-- 5 Employees
-- Sales, Operations, Product, and HR departments
-- Draft, Submitted, Returned, Approved, and Locked goal sheets
-- Shared KPI records
-- Q1 updates
-- Manager comments
-- Audit log entries
+```text
+app/
+  (auth)/login/page.tsx
+  (dashboard)/employee/page.tsx
+  (dashboard)/manager/page.tsx
+  (dashboard)/admin/page.tsx
+  actions/goals.ts
+  api/
+  auth/callback/route.ts
+components/
+  admin/
+  auth/
+  checkins/
+  dashboard/
+  goals/
+  layout/
+  manager/
+  reports/
+  ui/
+lib/
+  demo/seed-data.ts
+  domain/rules.ts
+  domain/escalations.ts
+  integrations/
+  supabase/
+scripts/
+  seed-demo-auth-users.mjs
+  sync-entra-org.mjs
+supabase/
+  schema.sql
+  seed.sql
+  demo-access.sql
+tests/e2e/
+  primary-role-journey.spec.ts
+types/
+  alignhq.ts
+docs/
+  ARCHITECTURE.md
+  SCHEMA_GRAPH.md
+  IMPLEMENTATION_PLAN.md
+  IMPLEMENTATION_STATUS.md
+  SUBMISSION_CHECKLIST.md
+```
 
-Local demo mode uses `localStorage` so judges can interact freely without network setup. Playwright tests force this mode with `NEXT_PUBLIC_ALIGNHQ_FORCE_LOCAL_DEMO=true`.
+---
 
 ## Architecture Notes
 
-- `lib/domain/rules.ts` is the shared business-rule layer for validation, score computation, health state, check-in completion, and CSV generation.
-- Client dashboards load Supabase data when a session or demo-access policies expose rows, and fall back to local demo state when Supabase is not configured.
-- The CSV export route uses the server Supabase client when available and falls back to seed data otherwise.
-- UI components follow shadcn conventions: small primitives, Radix for interactive behavior, `cn()` for class composition, and compact product surfaces.
-- The visual system uses warm neutrals, graphite navigation, and a restrained teal accent.
-- `docs/IMPLEMENTATION_PLAN.md`, `docs/IMPLEMENTATION_STATUS.md`, `docs/ARCHITECTURE.md`, and `docs/SUBMISSION_CHECKLIST.md` document delivery, architecture, and judging readiness.
+- Next.js App Router hosts the browser app and server routes.
+- Supabase is the source of truth when configured.
+- Local demo mode uses `localStorage` and deterministic seed data for offline judging.
+- RLS policies scope data by employee ownership, direct manager access, and Admin/HR governance rights.
+- `lib/domain/rules.ts` holds validation, scoring, CSV, check-in, and health-state logic.
+- `lib/domain/escalations.ts` builds late submission, late approval, and missed check-in alerts.
+- Playwright tests force local demo mode with `NEXT_PUBLIC_ALIGNHQ_FORCE_LOCAL_DEMO=true`.
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the system diagram.
+
+---
+
+## Documentation
+
+| File | Purpose |
+|---|---|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System diagram and hosting model |
+| [docs/SCHEMA_GRAPH.md](docs/SCHEMA_GRAPH.md) | Supabase ER diagram |
+| [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) | Build plan and delivery stages |
+| [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) | Completed work and remaining production tasks |
+| [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) | Hackathon judging checklist |
+
+---
 
 ## Deployment
 
 Deploy on Vercel:
 
 1. Push the repository to GitHub.
-2. Import it in Vercel.
-3. Add Supabase environment variables if using a live project.
-4. Deploy.
+2. Import the project in Vercel.
+3. Add Supabase environment variables.
+4. Add optional Entra, Teams, and email variables if live integrations are needed.
+5. Deploy.
 
-The app is cost-aware: Vercel static/serverless hosting plus Supabase managed Postgres/Auth is enough for the hackathon and a credible internal pilot.
+For a no-network demo, leave Supabase variables unset and use local demo mode.
