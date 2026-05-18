@@ -1,4 +1,18 @@
 import { createClient } from "@supabase/supabase-js";
+import fs from "node:fs";
+
+if (fs.existsSync(".env.local")) {
+  const envLines = fs.readFileSync(".env.local", "utf8").split(/\r?\n/);
+  for (const line of envLines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const index = trimmed.indexOf("=");
+    if (index === -1) continue;
+    const key = trimmed.slice(0, index);
+    const value = trimmed.slice(index + 1);
+    process.env[key] ??= value;
+  }
+}
 
 const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
