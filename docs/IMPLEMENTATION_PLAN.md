@@ -51,9 +51,23 @@ Status: Complete for handoff
 
 ## Remaining Production Work
 
-Status: Not required for hackathon demo
+Status: Implemented
 
-- Create real Supabase Auth users and map them to `public.users.auth_user_id`.
-- Replace local seeded demo repository with Supabase-backed data loading and mutations.
+- Create real Supabase Auth users and map them to `public.users.auth_user_id` with `npm run supabase:seed-auth`.
+- Replace local seeded demo repository with Supabase-backed data loading and mutations when Supabase is configured.
 - Add Playwright end-to-end tests for the primary role journey.
-- Add CI for build, audit, and typecheck.
+- Add CI for build, audit, typecheck, and Playwright.
+
+```mermaid
+flowchart TD
+    auth[Create real Supabase Auth users<br/>Map to public.users.auth_user_id]
+    data[Replace local seeded demo repository<br/>with Supabase-backed loading and mutations]
+    e2e[Add Playwright E2E tests<br/>for the primary role journey]
+    ci[Add CI<br/>build, audit, typecheck, and E2E]
+    pilot[Production-ready pilot path]
+
+    auth --> data
+    data --> e2e
+    e2e --> ci
+    ci --> pilot
+```

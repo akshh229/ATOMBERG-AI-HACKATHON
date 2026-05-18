@@ -360,6 +360,15 @@ using (
   public.current_app_role() = 'Admin'
   or primary_owner_id = public.current_app_user_id()
   or public.is_direct_manager(primary_owner_id)
+  or exists (
+    select 1
+    from public.shared_goal_links link
+    where link.shared_goal_id = shared_goals.id
+      and (
+        link.employee_id = public.current_app_user_id()
+        or public.is_direct_manager(link.employee_id)
+      )
+  )
 );
 
 create policy shared_goals_write_manager_admin

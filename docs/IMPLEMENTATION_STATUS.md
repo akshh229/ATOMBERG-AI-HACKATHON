@@ -15,16 +15,16 @@
 - Reporting & Audit Console with CSV export.
 - Optional Recharts analytics dashboard.
 - Supabase schema, database validation functions, lifecycle triggers, RLS policies, and deterministic seed SQL.
+- Supabase Auth demo-user seeding script that maps Auth users to `public.users.auth_user_id`.
+- Supabase-backed dashboard loading, mutations, and CSV export with local demo fallback.
+- Playwright E2E coverage for the Employee -> Manager -> Admin primary role journey.
+- GitHub Actions CI for install, typecheck, audit, build, and E2E tests.
 - README setup, architecture, demo path, and deployment notes.
 
 ## Remaining For Production Hardening
 
-- Connect seeded demo identities to real Supabase Auth users and populate `users.auth_user_id`.
-- Replace `localStorage` demo repository with Supabase-backed queries/mutations after credentials are configured.
-- Add end-to-end tests for the role demo path.
-- Add CI workflow for build, typecheck, and audit.
 - Add production-grade notification integrations only after core Supabase persistence is live.
 
 ## Recommended Next Step
 
-For hackathon submission, demo from the seeded app. For a live pilot, connect Supabase Auth first, run `supabase/schema.sql` and `supabase/seed.sql`, then swap dashboard data loading from `lib/demo/seed-data.ts` to Supabase queries.
+For hackathon submission, demo from the seeded app. For a live pilot, run `supabase/schema.sql`, `supabase/seed.sql`, then `npm run supabase:seed-auth` with `SUPABASE_SERVICE_ROLE_KEY` set.

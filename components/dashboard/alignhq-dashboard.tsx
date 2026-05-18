@@ -15,12 +15,13 @@ import { AnalyticsDashboard } from "@/components/reports/analytics-dashboard";
 import { ReportingConsole } from "@/components/reports/reporting-console";
 import { seedData } from "@/lib/demo/seed-data";
 import { checkInState, getEmployeeSheet, getSheetGoals, getUser, nowIso, uid, validateGoalSheet } from "@/lib/domain/rules";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
   createAuditLog,
   createGoal,
   createManagerComment,
   deleteGoal,
-  getAlignHqSupabaseClient,
+  loadCurrentAppUser,
   loadAlignHqData,
   saveCycleWindowPatch,
   saveGoalPatch,
@@ -44,19 +45,31 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
   const [quarter, setQuarter] = useState<Quarter>("Q1");
   const [dataMode, setDataMode] = useState<"loading" | "supabase" | "local">("loading");
   const [dataNotice, setDataNotice] = useState("Loading workspace data...");
-  const supabase = useMemo(() => getAlignHqSupabaseClient(), []);
+  const [supabase, setSupabase] = useState<ReturnType<typeof createSupabaseBrowserClient> | undefined>(undefined);
+
+  useEffect(() => {
+    setSupabase(createSupabaseBrowserClient());
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadData() {
+      if (supabase === undefined) return;
+
       if (supabase) {
         try {
-          const remoteData = await loadAlignHqData(supabase);
+          const [remoteData, currentProfile] = await Promise.all([loadAlignHqData(supabase), loadCurrentAppUser(supabase)]);
+          if (remoteData.users.length === 0) {
+            throw new Error("Supabase returned no visible workspace rows");
+          }
           if (cancelled) return;
+          const preferredUser = currentProfile ?? remoteData.users.find((user) => user.role === initialRole) ?? remoteData.users[0];
           setData(remoteData);
+          setActiveUserId(preferredUser.id);
+          setActiveModule(defaultModuleForRole(preferredUser.role));
           setDataMode("supabase");
-          setDataNotice("Connected to Supabase. Changes are saved to the live demo database.");
+          setDataNotice(currentProfile ? "Signed in with Supabase Auth. Changes are saved to the live database." : "Connected to Supabase demo access. Changes are saved to the live database.");
           return;
         } catch (error) {
           if (!cancelled) {
@@ -96,10 +109,11 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
     }
   }, [data, dataMode]);
 
-  const activeUser = getUser(data, activeUserId);
+  const activeUser = data.users.find((user) => user.id === activeUserId) ?? data.users.find((user) => user.role === initialRole) ?? seedData.users.find((user) => user.role === initialRole) ?? seedData.users[0];
 
   const handleUserChange = (userId: string) => {
-    const user = getUser(data, userId);
+    const user = data.users.find((item) => item.id === userId);
+    if (!user) return;
     setActiveUserId(userId);
     setActiveModule(defaultModuleForRole(user.role));
   };

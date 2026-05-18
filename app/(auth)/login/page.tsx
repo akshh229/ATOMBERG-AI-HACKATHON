@@ -1,14 +1,6 @@
-import Link from "next/link";
-import { ArrowRight, Building2, ShieldCheck } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-
-const roles = [
-  { href: "/employee", label: "Employee", name: "Asha Menon", note: "Create goals and submit Q1 updates" },
-  { href: "/manager", label: "Manager", name: "Isha Rao", note: "Review, return, approve, and comment" },
-  { href: "/admin", label: "Admin / HR", name: "Priya Nair", note: "Govern completion, audit, unlock, export" }
-];
+import { DemoRoleLauncher } from "@/components/auth/demo-role-launcher";
 
 export default function LoginPage() {
   return (
@@ -28,35 +20,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <Card className="shadow-md">
-            <CardHeader>
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <CardTitle>Choose a demo role</CardTitle>
-                  <p className="mt-1 text-sm text-stone-600">Seeded identities keep the primary demo path fast and reliable.</p>
-                </div>
-                <ShieldCheck className="size-5 text-[hsl(var(--primary))]" />
-              </div>
-            </CardHeader>
-            <CardContent className="grid gap-3">
-              {roles.map((role) => (
-                <Link key={role.href} href={role.href} className="group rounded-lg border bg-white p-4 transition-colors hover:border-[hsl(var(--primary))]">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-stone-950">{role.name}</span>
-                        <Badge variant="secondary">{role.label}</Badge>
-                      </div>
-                      <p className="mt-1 text-sm text-stone-600">{role.note}</p>
-                    </div>
-                    <Button size="icon" variant="ghost" aria-label={`Open ${role.label} demo`}>
-                      <ArrowRight className="size-4" />
-                    </Button>
-                  </div>
-                </Link>
-              ))}
-            </CardContent>
-          </Card>
+          <DemoRoleLauncher />
         </div>
       </section>
     </main>

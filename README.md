@@ -14,7 +14,7 @@ AlignHQ is a hackathon-ready internal goal setting and quarterly tracking portal
 | Charts | Recharts |
 | Deployment | Vercel + Supabase |
 
-The app runs immediately with seeded demo data stored in `localStorage`. Supabase clients, middleware, route handlers, and schema are included so the project can be connected to a real Supabase project after the hackathon demo path is stable.
+The app runs immediately in local demo mode and switches to Supabase-backed loading and mutations when Supabase environment variables and Auth demo users are configured.
 
 ## Run Locally
 
@@ -28,7 +28,9 @@ Open `http://localhost:3000`.
 Build check:
 
 ```bash
+npm run typecheck
 npm run build
+npm run test:e2e
 ```
 
 ## Demo Path
@@ -112,9 +114,10 @@ Create `.env.local`:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_for_seed_scripts_only
 ```
 
-The app also supports the older `NEXT_PUBLIC_SUPABASE_ANON_KEY` name as a fallback.
+The app also supports the older `NEXT_PUBLIC_SUPABASE_ANON_KEY` name as a fallback. Never expose `SUPABASE_SERVICE_ROLE_KEY` to the browser or deployment logs.
 
 Apply the schema:
 
@@ -132,7 +135,21 @@ supabase db execute --file supabase/seed.sql
 
 Or paste `supabase/seed.sql` into the Supabase SQL editor after the schema.
 
-For the hackathon role-switcher demo without real Supabase Auth users, also run:
+Create real Supabase Auth users for the primary demo roles and map them to `public.users.auth_user_id`:
+
+```bash
+npm run supabase:seed-auth
+```
+
+The script creates Auth users for every row in `supabase/seed.sql`. The primary launch accounts are:
+
+| Role | Email | Password |
+|---|---|---|
+| Employee | `asha.menon@alignhq.test` | `AlignHQ-demo-2026!` |
+| Manager | `isha.rao@alignhq.test` | `AlignHQ-demo-2026!` |
+| Admin / HR | `priya.nair@alignhq.test` | `AlignHQ-demo-2026!` |
+
+For the old hackathon role-switcher demo without real Supabase Auth users, also run:
 
 ```bash
 supabase db execute --file supabase/demo-access.sql
@@ -160,9 +177,11 @@ The schema includes:
 
 RLS is enabled on all core tables, with policies for employee ownership, manager direct-report access, and Admin/HR governance access. The schema also includes database-side validation and lock-guard triggers.
 
-## Seed Data Strategy
+## Data Strategy
 
-Seed data lives in `lib/demo/seed-data.ts` and includes:
+Supabase is the configured source of truth for authenticated runs. `lib/supabase/alignhq-repository.ts` loads workspace data and writes goal, sheet, quarterly update, comment, cycle window, and audit mutations through Supabase.
+
+Local fallback seed data lives in `lib/demo/seed-data.ts` and includes:
 
 - 1 Admin / HR user
 - 2 Managers
@@ -174,13 +193,13 @@ Seed data lives in `lib/demo/seed-data.ts` and includes:
 - Manager comments
 - Audit log entries
 
-The demo uses `localStorage` so judges can interact freely without network setup. The domain model mirrors the Supabase schema to keep migration straightforward.
+Local demo mode uses `localStorage` so judges can interact freely without network setup. Playwright tests force this mode with `NEXT_PUBLIC_ALIGNHQ_FORCE_LOCAL_DEMO=true`.
 
 ## Architecture Notes
 
 - `lib/domain/rules.ts` is the shared business-rule layer for validation, score computation, health state, check-in completion, and CSV generation.
-- Client dashboards use seeded data for smooth demoability; Supabase clients and middleware are present for real auth/session integration.
-- The CSV export route demonstrates a server route handler and can be swapped from seeded data to Supabase queries.
+- Client dashboards load Supabase data when a session or demo-access policies expose rows, and fall back to local demo state when Supabase is not configured.
+- The CSV export route uses the server Supabase client when available and falls back to seed data otherwise.
 - UI components follow shadcn conventions: small primitives, Radix for interactive behavior, `cn()` for class composition, and compact product surfaces.
 - The visual system uses warm neutrals, graphite navigation, and a restrained teal accent.
 - `docs/IMPLEMENTATION_PLAN.md` and `docs/IMPLEMENTATION_STATUS.md` document what is complete and what remains for a production pilot.

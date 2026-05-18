@@ -7,6 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "supabase:seed-auth": "node scripts/seed-demo-auth-users.mjs",
     "lint": "next lint"
   },
   "dependencies": {
@@ -25,6 +28,7 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^24.10.2",
     "@types/react": "^19.2.14",

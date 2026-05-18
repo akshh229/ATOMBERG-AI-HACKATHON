@@ -1,7 +1,4 @@
-"use client";
-
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { progressScoreFromUpdate } from "@/lib/domain/rules";
 import type {
   AlignHqData,
@@ -20,13 +17,23 @@ import type {
 type Client = SupabaseClient;
 type AnyRow = Record<string, any>;
 
-export function getAlignHqSupabaseClient() {
-  return createSupabaseBrowserClient();
-}
-
 function raise(context: string, error: unknown): never {
   const message = error && typeof error === "object" && "message" in error ? String((error as { message: unknown }).message) : "Unknown Supabase error";
   throw new Error(`${context}: ${message}`);
+}
+
+export async function loadCurrentAppUser(client: Client): Promise<AppUser | null> {
+  const {
+    data: { user },
+    error: authError
+  } = await client.auth.getUser();
+
+  if (authError || !user) return null;
+
+  const result = await client.from("users").select("*").eq("auth_user_id", user.id).maybeSingle();
+  if (result.error) raise("Load authenticated profile failed", result.error);
+
+  return result.data ? mapUser(result.data) : null;
 }
 
 export async function loadAlignHqData(client: Client): Promise<AlignHqData> {
