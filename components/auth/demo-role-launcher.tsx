@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import type { Provider } from "@supabase/supabase-js";
+import { ArrowRight, KeyRound, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { demoAccounts } from "@/lib/demo/demo-accounts";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -36,6 +38,20 @@ export function DemoRoleLauncher() {
     window.location.href = account.href;
   }
 
+  async function launchEntraSso() {
+    if (!supabase) return;
+
+    setError("");
+    const { error: ssoError } = await supabase.auth.signInWithOAuth({
+      provider: "azure" as Provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
+    });
+
+    if (ssoError) setError(`${ssoError.message}. Configure the Azure provider in Supabase Auth before using Entra ID SSO.`);
+  }
+
   return (
     <Card className="shadow-md">
       <CardHeader>
@@ -50,6 +66,12 @@ export function DemoRoleLauncher() {
         </div>
       </CardHeader>
       <CardContent className="grid gap-3">
+        {supabase ? (
+          <Button variant="secondary" className="justify-start" onClick={() => void launchEntraSso()}>
+            <KeyRound className="size-4" />
+            Continue with Microsoft Entra ID
+          </Button>
+        ) : null}
         {demoAccounts.map((account) => {
           const content = (
             <div className="flex items-center justify-between gap-4">

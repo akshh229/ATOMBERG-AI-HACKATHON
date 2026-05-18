@@ -33,4 +33,14 @@ test("employee submits goals, manager approves, admin can govern the locked shee
   await expect(page.getByRole("heading", { name: "Governance Center" })).toBeVisible();
   await expect(page.getByText("Completion dashboard")).toBeVisible();
   await expect(page.getByRole("button", { name: "Unlock" }).first()).toBeVisible();
+
+  await page.getByRole("button", { name: "Escalations" }).click();
+  await expect(page.getByRole("heading", { name: "Escalation queue" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Dispatch" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Integrations" }).click();
+  await expect(page.getByRole("heading", { name: "Microsoft identity and collaboration" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Analytics" }).click();
+  await expect(page.getByRole("heading", { name: "QoQ achievement trend" })).toBeVisible();
 });

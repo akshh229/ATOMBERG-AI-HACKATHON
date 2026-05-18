@@ -2,7 +2,9 @@
 
 import { CheckCircle2, FileClock, Lock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { EscalationCenter } from "@/components/admin/escalation-center";
 import { GovernanceCenter } from "@/components/admin/governance-center";
+import { IntegrationCenter } from "@/components/admin/integration-center";
 import { EmployeeCheckInTracker, ManagerCheckInTracker } from "@/components/checkins/checkin-tracker";
 import { MetricStrip } from "@/components/dashboard/metric-strip";
 import { GoalHealthCards } from "@/components/goals/goal-health-cards";
@@ -329,7 +331,7 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
       onReset={resetDemo}
     >
       <MetricStrip metrics={metrics} />
-      <div className="mb-4 rounded-md border bg-white px-4 py-3 text-sm text-stone-600">
+      <div className="mb-4 rounded-md border bg-white px-4 py-3 text-sm text-stone-600" aria-live="polite">
         <span className="font-medium text-stone-900">{dataMode === "supabase" ? "Supabase mode" : dataMode === "local" ? "Local demo mode" : "Loading"}</span>
         <span className="ml-2">{dataNotice}</span>
       </div>
@@ -343,6 +345,8 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
       {activeModule === "team-actions" ? <TeamActions data={data} teamSheets={teamSheets} quarter={quarter} /> : null}
       {activeModule === "shared" ? <SharedKpiManager data={data} activeUser={activeUser} onPatchGoal={patchGoal} /> : null}
       {activeModule === "governance" ? <GovernanceCenter data={data} quarter={quarter} onUnlock={unlockSheet} onUpdateWindow={updateWindow} /> : null}
+      {activeModule === "escalations" ? <EscalationCenter data={data} quarter={quarter} /> : null}
+      {activeModule === "integrations" ? <IntegrationCenter data={data} /> : null}
       {activeModule === "reports" ? <ReportingConsole data={data} quarter={quarter} /> : null}
       {activeModule === "analytics" ? <AnalyticsDashboard data={data} quarter={quarter} /> : null}
     </DashboardShell>

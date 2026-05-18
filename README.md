@@ -55,9 +55,11 @@ Use **Reset demo data** in the sidebar to restore the seeded state.
 | Shared KPI Manager | Linked departmental KPI view with recipient-only weightage editing and primary-owner update sync. |
 | Quarterly Check-ins | Employee actual achievement updates, status, blocked flag, manager comments. |
 | Admin Governance Center | Cycle windows, completion dashboard, unlock reason modal, audit entries. |
+| Escalation Center | Rule-based reminders and escalations for late goal submission, manager approval, and quarterly check-ins. |
+| Integration Center | Entra ID / Azure AD SSO readiness, Azure group role mapping, org hierarchy, email and Teams status. |
 | Reporting & Audit Console | Achievement report, CSV export, audit timeline. |
 | Goal Health Cards | Rule-based Healthy / Needs Attention / Delayed / Blocked states. |
-| Analytics Dashboard | Recharts trend and department completion views. |
+| Analytics Dashboard | QoQ trends, completion heatmaps, goal distribution, and manager effectiveness views. |
 
 ## Business Rules
 
@@ -87,8 +89,11 @@ app/
   (dashboard)/manager/page.tsx
   (dashboard)/admin/page.tsx
   actions/goals.ts
+  auth/callback/route.ts
+  api/integrations/dispatch-escalations/route.ts
   api/reports/achievement/route.ts
 components/
+  auth/
   admin/
   checkins/
   dashboard/
@@ -99,10 +104,16 @@ components/
   ui/
 lib/
   demo/seed-data.ts
+  domain/escalations.ts
   domain/rules.ts
+  integrations/dispatch.ts
+  integrations/notifications.ts
   supabase/browser.ts
   supabase/server.ts
   utils/cn.ts
+scripts/
+  seed-demo-auth-users.mjs
+  sync-entra-org.mjs
 types/alignhq.ts
 supabase/schema.sql
 ```
@@ -115,7 +126,10 @@ Create `.env.local`:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_for_seed_scripts_only
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
+
+Use `.env.example` as the complete template for Supabase, Entra, Teams, and email integration settings.
 
 The app also supports the older `NEXT_PUBLIC_SUPABASE_ANON_KEY` name as a fallback. Never expose `SUPABASE_SERVICE_ROLE_KEY` to the browser or deployment logs.
 
@@ -177,6 +191,40 @@ The schema includes:
 
 RLS is enabled on all core tables, with policies for employee ownership, manager direct-report access, and Admin/HR governance access. The schema also includes database-side validation and lock-guard triggers.
 
+## Microsoft Integrations
+
+AlignHQ includes an Entra ID SSO entry point on `/login`, an OAuth callback at `/auth/callback`, and an Admin Integration Center for group-role mapping and org hierarchy visibility. Configure the Azure provider in Supabase Auth before using the Microsoft SSO button.
+
+The escalation module generates email and Microsoft Teams adaptive-card notification payloads with deep links to the relevant goal sheet. Production delivery can be wired to Microsoft Graph, SMTP, or a Teams workflow/webhook from the notification builder in `lib/integrations/notifications.ts`.
+
+Optional production integration variables:
+
+```env
+ENTRA_TENANT_ID=your_azure_tenant_id
+ENTRA_CLIENT_ID=your_azure_app_client_id
+ENTRA_CLIENT_SECRET=your_azure_app_client_secret
+ENTRA_EMPLOYEE_GROUP_ID=azure_ad_group_id_for_employees
+ENTRA_MANAGER_GROUP_ID=azure_ad_group_id_for_managers
+ENTRA_ADMIN_GROUP_ID=azure_ad_group_id_for_hr_admins
+TEAMS_WEBHOOK_URL=teams_workflow_or_incoming_webhook_url
+EMAIL_WEBHOOK_URL=email_provider_webhook_url
+EMAIL_WEBHOOK_TOKEN=optional_email_webhook_bearer_token
+```
+
+Sync Entra group membership and manager hierarchy into `public.users`:
+
+```bash
+npm run entra:sync-org
+```
+
+Dispatch active escalation notifications from the Admin Escalations page, or call:
+
+```bash
+curl -X POST http://localhost:3000/api/integrations/dispatch-escalations \
+  -H "content-type: application/json" \
+  -d "{\"quarter\":\"Q1\",\"origin\":\"http://localhost:3000\"}"
+```
+
 ## Data Strategy
 
 Supabase is the configured source of truth for authenticated runs. `lib/supabase/alignhq-repository.ts` loads workspace data and writes goal, sheet, quarterly update, comment, cycle window, and audit mutations through Supabase.
@@ -202,7 +250,7 @@ Local demo mode uses `localStorage` so judges can interact freely without networ
 - The CSV export route uses the server Supabase client when available and falls back to seed data otherwise.
 - UI components follow shadcn conventions: small primitives, Radix for interactive behavior, `cn()` for class composition, and compact product surfaces.
 - The visual system uses warm neutrals, graphite navigation, and a restrained teal accent.
-- `docs/IMPLEMENTATION_PLAN.md` and `docs/IMPLEMENTATION_STATUS.md` document what is complete and what remains for a production pilot.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/IMPLEMENTATION_STATUS.md`, `docs/ARCHITECTURE.md`, and `docs/SUBMISSION_CHECKLIST.md` document delivery, architecture, and judging readiness.
 
 ## Deployment
 

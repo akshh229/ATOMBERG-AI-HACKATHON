@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
     "supabase:seed-auth": "node scripts/seed-demo-auth-users.mjs",
+    "entra:sync-org": "node scripts/sync-entra-org.mjs",
     "lint": "next lint"
   },
   "dependencies": {
