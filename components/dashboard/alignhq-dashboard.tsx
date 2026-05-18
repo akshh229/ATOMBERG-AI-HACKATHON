@@ -15,6 +15,18 @@ import { AnalyticsDashboard } from "@/components/reports/analytics-dashboard";
 import { ReportingConsole } from "@/components/reports/reporting-console";
 import { seedData } from "@/lib/demo/seed-data";
 import { checkInState, getEmployeeSheet, getSheetGoals, getUser, nowIso, uid, validateGoalSheet } from "@/lib/domain/rules";
+import {
+  createAuditLog,
+  createGoal,
+  createManagerComment,
+  deleteGoal,
+  getAlignHqSupabaseClient,
+  loadAlignHqData,
+  saveCycleWindowPatch,
+  saveGoalPatch,
+  saveGoalUpdate,
+  saveSheetState
+} from "@/lib/supabase/alignhq-repository";
 import type { AlignHqData, AppUser, CycleWindow, Goal, GoalSheetState, GoalUpdate, Quarter, Role } from "@/types/alignhq";
 
 const STORAGE_KEY = "alignhq-next-demo-state";
@@ -30,21 +42,59 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
   const [activeUserId, setActiveUserId] = useState(initialUserByRole[initialRole]);
   const [activeModule, setActiveModule] = useState(defaultModuleForRole(initialRole));
   const [quarter, setQuarter] = useState<Quarter>("Q1");
+  const [dataMode, setDataMode] = useState<"loading" | "supabase" | "local">("loading");
+  const [dataNotice, setDataNotice] = useState("Loading workspace data...");
+  const supabase = useMemo(() => getAlignHqSupabaseClient(), []);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (saved) {
+    let cancelled = false;
+
+    async function loadData() {
+      if (supabase) {
+        try {
+          const remoteData = await loadAlignHqData(supabase);
+          if (cancelled) return;
+          setData(remoteData);
+          setDataMode("supabase");
+          setDataNotice("Connected to Supabase. Changes are saved to the live demo database.");
+          return;
+        } catch (error) {
+          if (!cancelled) {
+            setDataNotice(`${error instanceof Error ? error.message : "Supabase load failed"}. Using local demo fallback.`);
+          }
+        }
+      }
+
+      const saved = window.localStorage.getItem(STORAGE_KEY);
       try {
-        setData(JSON.parse(saved) as AlignHqData);
+        if (saved) setData(JSON.parse(saved) as AlignHqData);
       } catch {
         setData(seedData);
       }
+      if (!cancelled) setDataMode("local");
     }
-  }, []);
+
+    void loadData();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [data]);
+    if (dataMode === "supabase" && !data.users.some((user) => user.id === activeUserId)) {
+      const user = data.users.find((item) => item.role === initialRole) ?? data.users[0];
+      if (user) {
+        setActiveUserId(user.id);
+        setActiveModule(defaultModuleForRole(user.role));
+      }
+    }
+  }, [activeUserId, data.users, dataMode, initialRole]);
+
+  useEffect(() => {
+    if (dataMode === "local") {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+  }, [data, dataMode]);
 
   const activeUser = getUser(data, activeUserId);
 
@@ -63,23 +113,24 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
   }, [activeUser.id, data.goalSheets, data.users]);
 
   const audit = (actorId: string, action: string, entityType: string, entityId: string, previousValue: string, newValue: string, reason: string) => {
+    const log = {
+      id: uid("audit"),
+      actorId,
+      action,
+      entityType,
+      entityId,
+      previousValue,
+      newValue,
+      reason,
+      createdAt: nowIso()
+    };
     setData((prev) => ({
       ...prev,
-      auditLogs: [
-        {
-          id: uid("audit"),
-          actorId,
-          action,
-          entityType,
-          entityId,
-          previousValue,
-          newValue,
-          reason,
-          createdAt: nowIso()
-        },
-        ...prev.auditLogs
-      ]
+      auditLogs: [log, ...prev.auditLogs]
     }));
+    if (dataMode === "supabase" && supabase) {
+      void createAuditLog(supabase, log).catch((error) => setDataNotice(error.message));
+    }
   };
 
   const patchGoal = (goalId: string, patch: Partial<Goal>, reason = "Goal field updated") => {
@@ -88,6 +139,9 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
       ...prev,
       goals: prev.goals.map((goal) => (goal.id === goalId ? { ...goal, ...patch } : goal))
     }));
+    if (dataMode === "supabase" && supabase) {
+      void saveGoalPatch(supabase, goalId, patch).catch((error) => setDataNotice(error.message));
+    }
     audit(activeUser.id, "Edited goal", "goal", goalId, JSON.stringify(previous ?? {}), JSON.stringify(patch), reason);
   };
 
@@ -109,11 +163,17 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
       updates: {}
     };
     setData((prev) => ({ ...prev, goals: [...prev.goals, goal] }));
+    if (dataMode === "supabase" && supabase) {
+      void createGoal(supabase, goal).catch((error) => setDataNotice(error.message));
+    }
     audit(activeUser.id, "Added goal", "goal_sheet", currentSheet.id, "-", goal.id, "Employee added draft goal");
   };
 
   const removeGoal = (goalId: string) => {
     setData((prev) => ({ ...prev, goals: prev.goals.filter((goal) => goal.id !== goalId) }));
+    if (dataMode === "supabase" && supabase) {
+      void deleteGoal(supabase, goalId).catch((error) => setDataNotice(error.message));
+    }
     audit(activeUser.id, "Removed goal", "goal", goalId, goalId, "-", "Employee removed draft goal");
   };
 
@@ -125,6 +185,9 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
       goalSheets: prev.goalSheets.map((item) => (item.id === sheetId ? { ...item, state, returnedComment, lockedAt: state === "Locked" ? nowIso() : item.lockedAt } : item)),
       goals: prev.goals.map((goal) => (goal.sheetId === sheetId && state === "Locked" ? { ...goal, locked: true } : goal))
     }));
+    if (dataMode === "supabase" && supabase) {
+      void saveSheetState(supabase, sheetId, state, returnedComment, state === "Locked" ? nowIso() : sheet.lockedAt).catch((error) => setDataNotice(error.message));
+    }
     audit(activeUser.id, `Moved sheet to ${state}`, "goal_sheet", sheetId, sheet.state, state, reason);
   };
 
@@ -152,6 +215,9 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
       goalSheets: prev.goalSheets.map((item) => (item.id === sheetId ? { ...item, state: "Returned", returnedComment: reason } : item)),
       goals: prev.goals.map((goal) => (goal.sheetId === sheetId ? { ...goal, locked: false } : goal))
     }));
+    if (dataMode === "supabase" && supabase) {
+      void saveSheetState(supabase, sheetId, "Returned", reason).catch((error) => setDataNotice(error.message));
+    }
     audit(activeUser.id, "Unlocked approved goals", "goal_sheet", sheetId, sheet.state, "Returned", reason);
   };
 
@@ -165,6 +231,7 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
       submittedAt: nowIso()
     };
     const syncShared = goal.sharedGoalId && goal.primaryOwnerId === goal.employeeId;
+    const linkedGoals = data.goals.filter((item) => syncShared && item.sharedGoalId === goal.sharedGoalId);
     setData((prev) => ({
       ...prev,
       goals: prev.goals.map((item) => {
@@ -174,26 +241,30 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
         return item;
       })
     }));
+    if (dataMode === "supabase" && supabase) {
+      void saveGoalUpdate(supabase, goal, quarter, nextUpdate, linkedGoals).catch((error) => setDataNotice(error.message));
+    }
     audit(activeUser.id, "Submitted quarterly update", "goal", goal.id, JSON.stringify(goal.updates[quarter] ?? {}), JSON.stringify(nextUpdate), syncShared ? "Primary owner update synced to shared goal recipients" : "Quarterly actual updated");
   };
 
   const addManagerComment = (sheetId: string, goalId: string, comment: string) => {
     if (!comment.trim()) return;
+    const newComment = {
+      id: uid("comment"),
+      sheetId,
+      goalId,
+      managerId: activeUser.id,
+      quarter,
+      comment,
+      createdAt: nowIso()
+    };
     setData((prev) => ({
       ...prev,
-      managerComments: [
-        {
-          id: uid("comment"),
-          sheetId,
-          goalId,
-          managerId: activeUser.id,
-          quarter,
-          comment,
-          createdAt: nowIso()
-        },
-        ...prev.managerComments
-      ]
+      managerComments: [newComment, ...prev.managerComments]
     }));
+    if (dataMode === "supabase" && supabase) {
+      void createManagerComment(supabase, newComment).catch((error) => setDataNotice(error.message));
+    }
     audit(activeUser.id, "Added check-in comment", "goal", goalId, "-", comment, "Manager quarterly check-in");
   };
 
@@ -202,12 +273,21 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
       ...prev,
       cycleWindows: prev.cycleWindows.map((window) => (window.id === windowId ? { ...window, ...patch } : window))
     }));
+    if (dataMode === "supabase" && supabase) {
+      void saveCycleWindowPatch(supabase, windowId, patch).catch((error) => setDataNotice(error.message));
+    }
     audit(activeUser.id, "Updated cycle window", "cycle_window", windowId, "-", JSON.stringify(patch), "Admin configured cycle window");
   };
 
   const resetDemo = () => {
     window.localStorage.removeItem(STORAGE_KEY);
-    setData(seedData);
+    if (dataMode === "supabase" && supabase) {
+      void loadAlignHqData(supabase)
+        .then(setData)
+        .catch((error) => setDataNotice(error.message));
+    } else {
+      setData(seedData);
+    }
     setActiveUserId(initialUserByRole[initialRole]);
     setActiveModule(defaultModuleForRole(initialRole));
   };
@@ -235,6 +315,10 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
       onReset={resetDemo}
     >
       <MetricStrip metrics={metrics} />
+      <div className="mb-4 rounded-md border bg-white px-4 py-3 text-sm text-stone-600">
+        <span className="font-medium text-stone-900">{dataMode === "supabase" ? "Supabase mode" : dataMode === "local" ? "Local demo mode" : "Loading"}</span>
+        <span className="ml-2">{dataNotice}</span>
+      </div>
       {activeModule === "workspace" ? (
         <GoalWorkspace data={data} activeUser={activeUser as AppUser} sheet={currentSheet} goals={currentGoals} onPatchGoal={patchGoal} onAddGoal={addGoal} onRemoveGoal={removeGoal} onSubmit={submitSheet} />
       ) : null}

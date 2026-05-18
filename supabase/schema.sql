@@ -250,22 +250,28 @@ create or replace function public.current_app_user_id()
 returns uuid
 language sql
 stable
+security definer
+set search_path = public, auth
 as $$
-  select id from public.users where auth_user_id = auth.uid()
+  select id from public.users where auth_user_id = auth.uid() limit 1
 $$;
 
 create or replace function public.current_app_role()
 returns app_role
 language sql
 stable
+security definer
+set search_path = public, auth
 as $$
-  select role from public.users where auth_user_id = auth.uid()
+  select role from public.users where auth_user_id = auth.uid() limit 1
 $$;
 
 create or replace function public.is_direct_manager(target_employee_id uuid)
 returns boolean
 language sql
 stable
+security definer
+set search_path = public, auth
 as $$
   select exists (
     select 1

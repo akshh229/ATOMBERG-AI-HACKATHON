@@ -132,6 +132,20 @@ supabase db execute --file supabase/seed.sql
 
 Or paste `supabase/seed.sql` into the Supabase SQL editor after the schema.
 
+For the hackathon role-switcher demo without real Supabase Auth users, also run:
+
+```bash
+supabase db execute --file supabase/demo-access.sql
+```
+
+If you already applied an older copy of `schema.sql` and see an RLS recursion error, run:
+
+```bash
+supabase db execute --file supabase/rls-function-fix.sql
+```
+
+In the Supabase SQL editor, paste the contents of those files rather than the file paths.
+
 The schema includes:
 
 - `users`
