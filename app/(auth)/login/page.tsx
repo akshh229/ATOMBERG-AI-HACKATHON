@@ -30,6 +30,22 @@ export default function LoginPage() {
                 </div>
               ))}
             </div>
+            <div className="preview-board mt-5 max-w-xl rounded-lg border bg-white p-4 shadow-sm" aria-hidden="true">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase text-stone-500">Live cycle preview</span>
+                <span className="pulse-dot" />
+              </div>
+              <div className="grid gap-2">
+                {["Goal drafted", "Manager approval", "Q1 check-in"].map((label, index) => (
+                  <div key={label} className="preview-row">
+                    <span>{label}</span>
+                    <div className="preview-meter">
+                      <span style={{ width: `${92 - index * 18}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <DemoRoleLauncher />

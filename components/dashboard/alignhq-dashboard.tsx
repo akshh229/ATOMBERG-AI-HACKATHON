@@ -15,6 +15,7 @@ import { ApprovalDesk } from "@/components/manager/approval-desk";
 import { TeamActions } from "@/components/manager/team-actions";
 import { AnalyticsDashboard } from "@/components/reports/analytics-dashboard";
 import { ReportingConsole } from "@/components/reports/reporting-console";
+import { WorkflowPulse } from "@/components/dashboard/workflow-pulse";
 import { seedData } from "@/lib/demo/seed-data";
 import { checkInState, getEmployeeSheet, getSheetGoals, getUser, nowIso, uid, validateGoalSheet } from "@/lib/domain/rules";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -335,6 +336,7 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
         <span className="font-medium text-stone-900">{dataMode === "supabase" ? "Supabase mode" : dataMode === "local" ? "Local demo mode" : "Loading"}</span>
         <span className="ml-2">{dataNotice}</span>
       </div>
+      <WorkflowPulse data={data} dataMode={dataMode} quarter={quarter} />
       {activeModule === "workspace" ? (
         <GoalWorkspace data={data} activeUser={activeUser as AppUser} sheet={currentSheet} goals={currentGoals} onPatchGoal={patchGoal} onAddGoal={addGoal} onRemoveGoal={removeGoal} onSubmit={submitSheet} />
       ) : null}
