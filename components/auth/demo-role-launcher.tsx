@@ -53,7 +53,7 @@ export function DemoRoleLauncher() {
   }
 
   return (
-    <Card className="shadow-md">
+    <Card className="motion-pop">
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -91,19 +91,19 @@ export function DemoRoleLauncher() {
           return supabase ? (
             <button
               key={account.href}
-              className="group rounded-lg border bg-white p-4 text-left transition-colors hover:border-[hsl(var(--primary))] disabled:cursor-wait disabled:opacity-70"
+              className="interactive-lift group rounded-lg border bg-white p-4 text-left transition-colors hover:border-[hsl(var(--primary))] disabled:cursor-wait disabled:opacity-70"
               disabled={Boolean(busyRole)}
               onClick={() => void launch(account)}
             >
               {content}
             </button>
           ) : (
-            <Link key={account.href} href={account.href} className="group rounded-lg border bg-white p-4 transition-colors hover:border-[hsl(var(--primary))]">
+            <Link key={account.href} href={account.href} className="interactive-lift group rounded-lg border bg-white p-4 transition-colors hover:border-[hsl(var(--primary))]">
               {content}
             </Link>
           );
         })}
-        {error ? <p className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p> : null}
+        {error ? <p className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800" aria-live="polite">{error}</p> : null}
       </CardContent>
     </Card>
   );

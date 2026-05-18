@@ -70,17 +70,17 @@ export function DashboardShell({
       <a className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-stone-950 focus:shadow" href="#main-content">
         Skip to main content
       </a>
-      <aside className="flex bg-stone-800 p-5 text-stone-50 lg:min-h-dvh lg:flex-col">
+      <aside className="flex bg-stone-800 p-5 text-stone-50 lg:sticky lg:top-0 lg:min-h-dvh lg:flex-col">
         <div className="flex w-full flex-col gap-5">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-[hsl(var(--primary))] font-bold text-white">A</div>
+          <div className="motion-pop flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-[hsl(var(--primary))] font-bold text-white shadow-md">A</div>
             <div>
               <div className="font-semibold">AlignHQ</div>
               <div className="text-xs text-stone-300">Goal operations</div>
             </div>
           </div>
 
-          <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+          <div className="motion-enter rounded-lg border border-white/10 bg-white/5 p-3 shadow-sm">
             <label className="text-xs font-medium text-stone-300">Demo identity</label>
             <Select className="mt-2 bg-stone-50 text-stone-950" value={activeUser.id} onChange={(event) => onUserChange(event.target.value)}>
               {users.map((user) => (
@@ -92,7 +92,7 @@ export function DashboardShell({
             <p className="mt-2 text-pretty text-xs leading-5 text-stone-300">{activeUser.title}</p>
           </div>
 
-          <nav className="grid gap-1">
+          <nav className="grid gap-1" aria-label={`${activeUser.role} modules`}>
             {nav.map((item) => {
               const Icon = item.icon;
               return (
@@ -100,9 +100,10 @@ export function DashboardShell({
                   type="button"
                   key={item.id}
                   className={cn(
-                    "flex h-10 items-center gap-3 rounded-md px-3 text-left text-sm font-medium text-stone-100 hover:bg-white/10",
-                    activeModule === item.id && "bg-white/10"
+                    "interactive-lift accent-rail flex h-10 items-center gap-3 rounded-md px-3 text-left text-sm font-medium text-stone-100 hover:bg-white/10",
+                    activeModule === item.id && "bg-white/10 text-white"
                   )}
+                  data-active={activeModule === item.id}
                   aria-current={activeModule === item.id ? "page" : undefined}
                   onClick={() => onModuleChange(item.id)}
                 >
@@ -129,7 +130,7 @@ export function DashboardShell({
       </aside>
 
       <main id="main-content" className="min-w-0 p-5 lg:p-7">
-        <header className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <header className="command-bar sticky top-3 z-20 mb-5 flex flex-col gap-4 rounded-lg border bg-[hsl(var(--background))] px-4 py-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase text-stone-500">FY26 performance cycle</p>
             <h1 className="text-balance text-3xl font-semibold text-stone-950">{activeTitle}</h1>

@@ -331,7 +331,7 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
       onReset={resetDemo}
     >
       <MetricStrip metrics={metrics} />
-      <div className="mb-4 rounded-md border bg-white px-4 py-3 text-sm text-stone-600" aria-live="polite">
+      <div className="accent-rail motion-enter mb-4 rounded-md border bg-white px-4 py-3 text-sm text-stone-600 shadow-sm" aria-live="polite">
         <span className="font-medium text-stone-900">{dataMode === "supabase" ? "Supabase mode" : dataMode === "local" ? "Local demo mode" : "Loading"}</span>
         <span className="ml-2">{dataNotice}</span>
       </div>

@@ -7,8 +7,8 @@ export default function LoginPage() {
     <main className="min-h-dvh bg-[hsl(var(--background))] p-6">
       <section className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl items-center">
         <div className="grid w-full gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="flex flex-col justify-center">
-            <div className="mb-6 flex size-11 items-center justify-center rounded-lg bg-[hsl(var(--primary))] text-white">
+          <div className="motion-enter flex flex-col justify-center">
+            <div className="mb-6 flex size-11 items-center justify-center rounded-lg bg-[hsl(var(--primary))] text-white shadow-md">
               <Building2 className="size-5" />
             </div>
             <Badge className="w-fit">FY26 demo workspace</Badge>
@@ -18,6 +18,18 @@ export default function LoginPage() {
             <p className="mt-4 max-w-xl text-pretty text-sm leading-6 text-stone-600">
               A focused internal workflow for goal setting, manager approval, quarterly achievement tracking, and HR governance.
             </p>
+            <div className="floating-bars mt-8" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">
+              {["Employee", "Manager", "Admin"].map((role) => (
+                <div key={role} className="rounded-lg border bg-white px-3 py-3 text-sm font-medium text-stone-700 shadow-sm">
+                  {role}
+                </div>
+              ))}
+            </div>
           </div>
 
           <DemoRoleLauncher />

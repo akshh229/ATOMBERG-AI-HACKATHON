@@ -7,9 +7,9 @@ export function MetricStrip({ metrics }: { metrics: { label: string; value: stri
       {metrics.map((metric) => {
         const Icon = metric.icon;
         return (
-          <Card key={metric.label}>
+          <Card key={metric.label} className="accent-rail">
             <CardContent className="flex items-center gap-3 p-4">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-teal-50 text-[hsl(var(--primary))]">
+              <div className="motion-pop flex size-10 items-center justify-center rounded-lg bg-teal-50 text-[hsl(var(--primary))]">
                 <Icon className="size-5" />
               </div>
               <div>

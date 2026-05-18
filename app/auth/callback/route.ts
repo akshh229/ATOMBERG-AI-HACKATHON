@@ -16,7 +16,19 @@ export async function GET(request: Request) {
   if (!supabase || !code) redirect("/login");
 
   await supabase.auth.exchangeCodeForSession(code);
-  const profile = await loadCurrentAppUser(supabase);
+  let profile = await loadCurrentAppUser(supabase);
+
+  if (!profile) {
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+    const email = user?.email;
+
+    if (user?.id && email) {
+      await supabase.from("users").update({ auth_user_id: user.id }).eq("email", email).is("auth_user_id", null);
+      profile = await loadCurrentAppUser(supabase);
+    }
+  }
 
   redirect(profile ? homeByRole[profile.role] : "/login");
 }
