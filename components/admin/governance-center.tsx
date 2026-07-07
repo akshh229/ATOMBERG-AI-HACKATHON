@@ -23,7 +23,7 @@ export function GovernanceCenter({
   onUpdateWindow: (windowId: string, patch: Partial<CycleWindow>) => void;
 }) {
   const [unlockTarget, setUnlockTarget] = useState<GoalSheet | null>(null);
-  const [reason, setReason] = useState("Correction requested after approval.");
+  const [reason, setReason] = useState("");
 
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -58,7 +58,14 @@ export function GovernanceCenter({
                       <TableCell><StateChip state={checkInState(getSheetGoals(data, sheet.id), quarter)} /></TableCell>
                       <TableCell>
                         {sheet.state === "Locked" || sheet.state === "Approved" ? (
-                          <Button size="sm" variant="secondary" onClick={() => setUnlockTarget(sheet)}>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => {
+                              setReason("");
+                              setUnlockTarget(sheet);
+                            }}
+                          >
                             <Unlock className="size-4" />
                             Unlock
                           </Button>
@@ -109,6 +116,7 @@ export function GovernanceCenter({
               onClick={() => {
                 if (!unlockTarget) return;
                 onUnlock(unlockTarget.id, reason);
+                setReason("");
                 setUnlockTarget(null);
               }}
             >

@@ -8,3 +8,14 @@ export function getSupabaseEnv() {
 
   return { url, key, isConfigured: Boolean(url && key) };
 }
+
+export function isForcedLocalDemoMode() {
+  return process.env.NEXT_PUBLIC_ALIGNHQ_FORCE_LOCAL_DEMO === "true";
+}
+
+export function validateProductionEnv() {
+  if (process.env.NODE_ENV !== "production") return { valid: true, missing: [] as string[] };
+  const required = ["NEXT_PUBLIC_APP_URL"];
+  const missing = required.filter((key) => !(process.env[key] ?? "").trim());
+  return { valid: missing.length === 0, missing };
+}

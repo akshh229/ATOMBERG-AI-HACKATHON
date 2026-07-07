@@ -23,15 +23,28 @@ export function EscalationCenter({ data, quarter }: { data: AlignHqData; quarter
     setDispatchState("sending");
     setDispatchMessage("");
 
-    const response = await fetch("/api/integrations/dispatch-escalations", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ quarter, origin: window.location.origin })
-    });
-    const result = (await response.json()) as { sent: number; skipped: number; failed: number };
+    try {
+      const response = await fetch("/api/integrations/dispatch-escalations", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-idempotency-key": `dispatch-${quarter}-${Date.now()}` },
+        body: JSON.stringify({ quarter, origin: window.location.origin })
+      });
+      const result = (await response.json()) as
+        | { ok: true; sent: number; skipped: number; failed: number; deduped?: boolean }
+        | { ok: false; error: { message: string } };
 
-    setDispatchState("sent");
-    setDispatchMessage(`${result.sent} sent, ${result.skipped} skipped, ${result.failed} failed.`);
+      if (!response.ok || !result.ok) {
+        setDispatchState("idle");
+        setDispatchMessage(result.ok ? "Dispatch failed." : result.error.message);
+        return;
+      }
+
+      setDispatchState("sent");
+      setDispatchMessage(`${result.sent} sent, ${result.skipped} skipped, ${result.failed} failed${result.deduped ? " (deduped)" : ""}.`);
+    } catch (error) {
+      setDispatchState("idle");
+      setDispatchMessage(error instanceof Error ? error.message : "Dispatch failed.");
+    }
   };
 
   return (

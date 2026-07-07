@@ -9,13 +9,15 @@ export type DemoAccount = {
   note: string;
 };
 
+const demoAuthPassword = process.env.NEXT_PUBLIC_ALIGNHQ_DEMO_PASSWORD ?? "";
+
 export const demoAccounts: DemoAccount[] = [
   {
     role: "Employee",
     href: "/employee",
     name: "Asha Menon",
     email: "asha.menon@alignhq.test",
-    password: "AlignHQ-demo-2026!",
+    password: demoAuthPassword,
     note: "Create goals and submit Q1 updates"
   },
   {
@@ -23,7 +25,7 @@ export const demoAccounts: DemoAccount[] = [
     href: "/manager",
     name: "Isha Rao",
     email: "isha.rao@alignhq.test",
-    password: "AlignHQ-demo-2026!",
+    password: demoAuthPassword,
     note: "Review, return, approve, and comment"
   },
   {
@@ -31,7 +33,7 @@ export const demoAccounts: DemoAccount[] = [
     href: "/admin",
     name: "Priya Nair",
     email: "priya.nair@alignhq.test",
-    password: "AlignHQ-demo-2026!",
+    password: demoAuthPassword,
     note: "Govern completion, audit, unlock, export"
   }
 ];

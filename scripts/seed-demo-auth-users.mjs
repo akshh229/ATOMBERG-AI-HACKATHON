@@ -16,20 +16,21 @@ if (fs.existsSync(".env.local")) {
 
 const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const demoPassword = process.env.ALIGNHQ_DEMO_PASSWORD;
 
 const demoAccounts = [
-  { name: "Asha Menon", email: "asha.menon@alignhq.test", password: "AlignHQ-demo-2026!", role: "Employee" },
-  { name: "Rahul Bansal", email: "rahul.bansal@alignhq.test", password: "AlignHQ-demo-2026!", role: "Employee" },
-  { name: "Neha Shah", email: "neha.shah@alignhq.test", password: "AlignHQ-demo-2026!", role: "Employee" },
-  { name: "Kabir Suri", email: "kabir.suri@alignhq.test", password: "AlignHQ-demo-2026!", role: "Employee" },
-  { name: "Mira Kapoor", email: "mira.kapoor@alignhq.test", password: "AlignHQ-demo-2026!", role: "Employee" },
-  { name: "Isha Rao", email: "isha.rao@alignhq.test", password: "AlignHQ-demo-2026!", role: "Manager" },
-  { name: "Vikram Sethi", email: "vikram.sethi@alignhq.test", password: "AlignHQ-demo-2026!", role: "Manager" },
-  { name: "Priya Nair", email: "priya.nair@alignhq.test", password: "AlignHQ-demo-2026!", role: "Admin" }
+  { name: "Asha Menon", email: "asha.menon@alignhq.test", password: demoPassword, role: "Employee" },
+  { name: "Rahul Bansal", email: "rahul.bansal@alignhq.test", password: demoPassword, role: "Employee" },
+  { name: "Neha Shah", email: "neha.shah@alignhq.test", password: demoPassword, role: "Employee" },
+  { name: "Kabir Suri", email: "kabir.suri@alignhq.test", password: demoPassword, role: "Employee" },
+  { name: "Mira Kapoor", email: "mira.kapoor@alignhq.test", password: demoPassword, role: "Employee" },
+  { name: "Isha Rao", email: "isha.rao@alignhq.test", password: demoPassword, role: "Manager" },
+  { name: "Vikram Sethi", email: "vikram.sethi@alignhq.test", password: demoPassword, role: "Manager" },
+  { name: "Priya Nair", email: "priya.nair@alignhq.test", password: demoPassword, role: "Admin" }
 ];
 
-if (!url || !serviceRoleKey) {
-  console.error("Missing SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
+if (!url || !serviceRoleKey || !demoPassword) {
+  console.error("Missing SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL), SUPABASE_SERVICE_ROLE_KEY, or ALIGNHQ_DEMO_PASSWORD.");
   process.exit(1);
 }
 

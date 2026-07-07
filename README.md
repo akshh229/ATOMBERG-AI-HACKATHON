@@ -60,11 +60,7 @@ Employees draft goals. Managers approve and lock them. Admins govern the cycle, 
 
 ## Demo Accounts
 
-All seeded Supabase Auth demo users share one password:
-
-```text
-AlignHQ-demo-2026!
-```
+Seed demo users with `ALIGNHQ_DEMO_PASSWORD` and set the same value in `NEXT_PUBLIC_ALIGNHQ_DEMO_PASSWORD` for local sign-in buttons.
 
 | Role | Email | Demo path |
 |---|---|---|
@@ -140,6 +136,8 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_for_seed_scripts_only
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_ALIGNHQ_DEMO_PASSWORD=your_demo_password_for_local_sign_in
+ALIGNHQ_DEMO_PASSWORD=your_demo_password_for_seed_script
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY` is only for local seed scripts and server-side maintenance. Keep it out of browser code, client logs, and public deployments.
@@ -257,8 +255,12 @@ ENTRA_EMPLOYEE_GROUP_ID=azure_ad_group_id_for_employees
 ENTRA_MANAGER_GROUP_ID=azure_ad_group_id_for_managers
 ENTRA_ADMIN_GROUP_ID=azure_ad_group_id_for_hr_admins
 TEAMS_WEBHOOK_URL=teams_workflow_or_incoming_webhook_url
+TEAMS_WEBHOOK_ALLOWLIST=contoso.webhook.office.com
 EMAIL_WEBHOOK_URL=email_provider_webhook_url
 EMAIL_WEBHOOK_TOKEN=optional_email_webhook_bearer_token
+EMAIL_WEBHOOK_ALLOWLIST=api.your-mail-provider.com
+WEBHOOK_HMAC_SECRET=shared_hmac_secret_for_webhooks
+DISPATCH_MAX_RETRIES=2
 ```
 
 Sync Entra group membership and manager hierarchy into `public.users`:
@@ -271,11 +273,12 @@ Dispatch active escalation notices from the Admin Escalations page, or call:
 
 ```bash
 curl -X POST http://localhost:3000/api/integrations/dispatch-escalations \
+  -H "x-idempotency-key: dispatch-q1-001" \
   -H "content-type: application/json" \
   -d "{\"quarter\":\"Q1\",\"origin\":\"http://localhost:3000\"}"
 ```
 
-Notification payloads are generated in `lib/integrations/notifications.ts` for email and Microsoft Teams adaptive cards.
+Notification payloads are generated in `lib/integrations/notifications.ts` and dispatched with optional host allowlists, retry/backoff, and optional `x-alignhq-signature` HMAC headers.
 
 ---
 
@@ -350,6 +353,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the system diagram.
 | [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) | Build plan and delivery stages |
 | [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) | Completed work and remaining production tasks |
 | [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) | Hackathon judging checklist |
+| [docs/OPERATIONS.md](docs/OPERATIONS.md) | Runtime modes, security controls, troubleshooting, and incident basics |
 
 ---
 

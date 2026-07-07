@@ -32,11 +32,7 @@
 
 ## Demo Credentials
 
-All seeded demo accounts use:
-
-```text
-AlignHQ-demo-2026!
-```
+Seeded demo accounts use the `ALIGNHQ_DEMO_PASSWORD` value configured in your environment.
 
 - Employee: `asha.menon@alignhq.test`
 - Manager: `isha.rao@alignhq.test`

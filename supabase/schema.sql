@@ -206,6 +206,22 @@ as $$
 declare
   errors text[];
 begin
+  if old.state <> new.state then
+    if not (
+      (old.state = 'Draft' and new.state = 'Submitted')
+      or (old.state = 'Returned' and new.state = 'Submitted')
+      or (old.state = 'Submitted' and new.state in ('Returned', 'Approved', 'Locked'))
+      or (old.state = 'Approved' and new.state in ('Returned', 'Locked'))
+      or (old.state = 'Locked' and new.state = 'Returned')
+    ) then
+      raise exception 'Invalid state transition from % to %.', old.state, new.state;
+    end if;
+  end if;
+
+  if new.state = 'Returned' and coalesce(trim(new.returned_comment), '') = '' then
+    raise exception 'Returned sheets require a non-empty comment.';
+  end if;
+
   if new.state in ('Submitted', 'Approved', 'Locked') then
     errors := public.goal_sheet_validation_errors(new.id);
     if array_length(errors, 1) is not null then

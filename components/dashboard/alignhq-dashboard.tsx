@@ -76,7 +76,8 @@ export function AlignHqDashboard({ initialRole }: { initialRole: Role }) {
           return;
         } catch (error) {
           if (!cancelled) {
-            setDataNotice(`${error instanceof Error ? error.message : "Supabase load failed"}. Using local demo fallback.`);
+            console.warn("[data] supabase_load_failed", { error: error instanceof Error ? error.message : "Unknown error" });
+            setDataNotice("Live data is currently unavailable. Running in local demo fallback mode.");
           }
         }
       }

@@ -21,6 +21,10 @@ export function DemoRoleLauncher() {
 
   async function launch(account: (typeof demoAccounts)[number]) {
     if (!supabase) return;
+    if (!account.password) {
+      setError("Missing NEXT_PUBLIC_ALIGNHQ_DEMO_PASSWORD. Configure it in your environment before using demo account sign-in.");
+      return;
+    }
 
     setBusyRole(account.role);
     setError("");
