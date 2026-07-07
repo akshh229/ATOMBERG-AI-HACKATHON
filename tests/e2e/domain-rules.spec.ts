@@ -6,7 +6,7 @@ import { progressScoreFromUpdate, validateGoalSheet } from "../../lib/domain/rul
 test("validateGoalSheet rejects invalid total and low-weight goals", () => {
   const goals = seedData.goals
     .filter((goal) => goal.sheetId === "sheet-asha")
-    .map((goal) => ({ ...goal, weightage: goal.id === "goal-asha-1" ? 5 : goal.weightage }));
+    .map((goal) => ({ ...goal, weightage: goal.id === "goal-a1" ? 5 : goal.weightage }));
 
   const result = validateGoalSheet(goals);
 
@@ -33,7 +33,7 @@ test("progressScoreFromUpdate applies timeline penalty", () => {
 });
 
 test("buildEscalationItems creates reminder/escalated entries near or past due windows", () => {
-  const now = new Date("2026-04-20T00:00:00.000Z");
+  const now = new Date("2027-01-20T00:00:00.000Z");
   const items = buildEscalationItems(seedData, "Q1", now);
 
   expect(items.length).toBeGreaterThan(0);

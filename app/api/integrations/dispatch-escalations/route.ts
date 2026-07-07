@@ -13,8 +13,16 @@ import type { Quarter } from "@/types/alignhq";
 function originAllowlist() {
   return (process.env.ALIGNHQ_ALLOWED_ORIGINS ?? "")
     .split(",")
-    .map((entry) => entry.trim())
+    .map((entry) => entry.trim().toLowerCase())
     .filter(Boolean);
+}
+
+function normalizeOrigin(value: string) {
+  try {
+    return new URL(value).origin.toLowerCase();
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(request: Request) {
@@ -57,10 +65,14 @@ export async function POST(request: Request) {
   const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? "https://alignhq.example.com";
   const requestedOrigin = body.origin?.trim();
   const allowedOrigins = originAllowlist();
-  const origin = requestedOrigin?.startsWith("http") ? requestedOrigin : appOrigin;
-  if (allowedOrigins.length > 0 && !allowedOrigins.includes(origin)) {
+  const normalizedOrigin = normalizeOrigin(requestedOrigin ?? "") ?? normalizeOrigin(appOrigin);
+  if (!normalizedOrigin) {
+    return apiError(500, "internal_error", "Dispatch origin configuration is invalid.");
+  }
+  if (allowedOrigins.length > 0 && !allowedOrigins.includes(normalizedOrigin)) {
     return apiError(400, "bad_request", "Origin is not allowed for dispatch deep links.");
   }
+  const origin = normalizedOrigin;
   const escalations = buildEscalationItems(data.users.length > 0 ? data : seedData, quarter);
   const notifications = buildNotificationPreviews(escalations, origin);
   const results = await Promise.all(notifications.map(dispatchNotification));

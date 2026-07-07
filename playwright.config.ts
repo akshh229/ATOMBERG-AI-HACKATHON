@@ -4,13 +4,14 @@ export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
   reporter: [["list"], ["html", { open: "never" }]],
+  timeout: 45_000,
   use: {
-    baseURL: "http://localhost:3100",
+    baseURL: "http://localhost:3200",
     trace: "on-first-retry"
   },
   webServer: {
-    command: "npm run dev -- -p 3100",
-    url: "http://localhost:3100",
+    command: "npm run dev -- -p 3200",
+    url: "http://localhost:3200",
     env: {
       ...process.env,
       NEXT_PUBLIC_ALIGNHQ_FORCE_LOCAL_DEMO: "true",
